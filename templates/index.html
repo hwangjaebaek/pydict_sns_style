@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}홈 — PyDict{% endblock %}
+
+{% block content %}
+
+<div class="feed-header">
+  <span class="feed-title">홈</span>
+  <span style="font-size:13px; color:var(--muted);">Python 3.x</span>
+</div>
+
+<form method="POST" action="{{ url_for('index') }}" class="search-bar">
+  <span class="search-bar-icon">🔍</span>
+  <input type="text" name="keyword" placeholder="문법/개념 입력... (예: 리스트, list, 상속)" required>
+  <button type="submit" class="search-submit-btn">검색</button>
+</form>
+
+{% if error_msg %}
+  <div class="error-alert">{{ error_msg }}</div>
+{% endif %}
+
+<!-- 카테고리 스토리 -->
+<div class="story-strip">
+  <a href="{{ url_for('index') }}"              class="story-pill {% if not selected_cat %}active{% endif %}">전체</a>
+  <a href="{{ url_for('index') }}?cat=basic"    class="story-pill {% if selected_cat == 'basic' %}active{% endif %}">📝 기초</a>
+  <a href="{{ url_for('index') }}?cat=control"  class="story-pill {% if selected_cat == 'control' %}active{% endif %}">🔀 제어문</a>
+  <a href="{{ url_for('index') }}?cat=function" class="story-pill {% if selected_cat == 'function' %}active{% endif %}">⚙️ 함수</a>
+  <a href="{{ url_for('index') }}?cat=data"     class="story-pill {% if selected_cat == 'data' %}active{% endif %}">🗂️ 자료구조</a>
+  <a href="{{ url_for('index') }}?cat=oop"      class="story-pill {% if selected_cat == 'oop' %}active{% endif %}">🧩 클래스</a>
+  <a href="{{ url_for('index') }}?cat=file"     class="story-pill {% if selected_cat == 'file' %}active{% endif %}">📁 파일</a>
+  <a href="{{ url_for('index') }}?cat=module"   class="story-pill {% if selected_cat == 'module' %}active{% endif %}">📦 모듈</a>
+</div>
+
+<!-- 문법 카드 피드 -->
+{% for item in all_items %}
+<a href="{{ url_for('detail', slug=item.slug) }}" class="grammar-card">
+  <div class="card-avatar av-{{ item.category }}">
+    {{ item.keyword[:2] if item.keyword|length >= 2 else item.keyword }}
+  </div>
+  <div class="card-body">
+    <div class="card-meta">
+      <span class="card-keyword">{{ item.keyword }}</span>
+      <span class="card-handle">@{{ item.slug }}_py</span>
+      <span class="card-dot">·</span>
+      <span class="level-tag lv-{{ item.level }}">
+        {{ '기초' if item.level == 'basic' else ('중급' if item.level == 'mid' else '고급') }}
+      </span>
+    </div>
+    <div class="card-summary">{{ item.summary }}</div>
+    {% if item.preview_code %}
+    <div class="card-code-preview">{{ item.preview_code }}</div>
+    {% endif %}
+    <div class="card-actions" onclick="event.preventDefault()">
+      <button class="card-action action-reply">💬 <span>댓글</span></button>
+      <button class="card-action action-like">🤍 <span>{{ item.likes }}</span></button>
+      <button class="card-action action-save">🔖 <span>저장</span></button>
+      <button class="card-action action-share">↗ <span>공유</span></button>
+    </div>
+  </div>
+</a>
+{% endfor %}
+
+{% endblock %}

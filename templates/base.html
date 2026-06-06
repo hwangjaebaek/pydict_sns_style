@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PyDict{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ── 왼쪽 사이드바 ── -->
+  <aside class="left-sidebar">
+    <div class="logo-wrap">
+      <div class="logo-mark">
+        <div class="logo-icon">Py</div>
+        <span>PyDict</span>
+      </div>
+    </div>
+
+    <nav class="nav-items">
+      <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">홈</span>
+      </a>
+      <a href="{{ url_for('search') }}" class="nav-item {% if request.endpoint == 'search' %}active{% endif %}">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">탐색</span>
+      </a>
+      <a href="{{ url_for('index') }}?cat=basic" class="nav-item">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">기초</span>
+      </a>
+      <a href="{{ url_for('index') }}?cat=control" class="nav-item">
+        <span class="nav-icon">🔀</span>
+        <span class="nav-label">제어문</span>
+      </a>
+      <a href="{{ url_for('index') }}?cat=function" class="nav-item">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">함수</span>
+      </a>
+      <a href="{{ url_for('index') }}?cat=data" class="nav-item">
+        <span class="nav-icon">🗂️</span>
+        <span class="nav-label">자료구조</span>
+      </a>
+      <a href="{{ url_for('index') }}?cat=oop" class="nav-item">
+        <span class="nav-icon">🧩</span>
+        <span class="nav-label">클래스</span>
+      </a>
+    </nav>
+
+    <a href="{{ url_for('index') }}" class="post-btn">문법 보기</a>
+  </aside>
+
+  <!-- ── 메인 피드 ── -->
+  <main class="main-feed">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── 오른쪽 사이드바 ── -->
+  <aside class="right-sidebar">
+    <form action="{{ url_for('search') }}" method="GET" class="search-right">
+      <span style="font-size:16px; color:var(--muted);">🔍</span>
+      <input type="text" name="q" placeholder="문법 검색..." value="{{ request.args.get('q', '') }}">
+    </form>
+
+    <div class="widget-box">
+      <div class="widget-title">트렌딩 문법</div>
+      <div class="trend-item" onclick="location.href='{{ url_for('detail', slug='for') }}'">
+        <div class="trend-cat">제어문 · 트렌딩</div>
+        <div class="trend-name">for</div>
+        <div class="trend-cnt">조회 2,847회</div>
+      </div>
+      <div class="trend-item" onclick="location.href='{{ url_for('detail', slug='list') }}'">
+        <div class="trend-cat">자료구조 · 트렌딩</div>
+        <div class="trend-name">list [ ]</div>
+        <div class="trend-cnt">조회 2,103회</div>
+      </div>
+      <div class="trend-item" onclick="location.href='{{ url_for('detail', slug='def') }}'">
+        <div class="trend-cat">함수 · 트렌딩</div>
+        <div class="trend-name">def</div>
+        <div class="trend-cnt">조회 1,956회</div>
+      </div>
+      <div class="trend-item" onclick="location.href='{{ url_for('detail', slug='dict') }}'">
+        <div class="trend-cat">자료구조 · 트렌딩</div>
+        <div class="trend-name">dict { }</div>
+        <div class="trend-cnt">조회 1,734회</div>
+      </div>
+      <div class="trend-item" onclick="location.href='{{ url_for('detail', slug='class') }}'">
+        <div class="trend-cat">객체지향 · 트렌딩</div>
+        <div class="trend-name">class</div>
+        <div class="trend-cnt">조회 1,402회</div>
+      </div>
+    </div>
+
+    <div class="widget-box">
+      <div class="widget-title">🕒 최근 검색 기록 <span style="font-size:11px; color:var(--muted); font-weight:normal;">(최대 10개)</span></div>
+      {% if history_list %}
+        {% for word in history_list %}
+          <div class="tag-item">
+            <a href="{{ url_for('search') }}?q={{ word }}" class="tag-text"># {{ word }}</a>
+            <form method="POST" action="{{ url_for('toggle_favorite', word=word) }}" style="display:inline;">
+              <button type="submit" class="fav-btn" title="즐겨찾기 고정/해제">★</button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--muted); font-size:13px;">아직 검색한 기록이 없습니다.</p>
+      {% endif %}
+    </div>
+
+    <div class="widget-box">
+      <div class="widget-title">⭐ 즐겨찾기 고정</div>
+      {% if favorite_list %}
+        {% for fav_word in favorite_list %}
+          <div class="fav-item">
+            <a href="{{ url_for('search') }}?q={{ fav_word }}" class="fav-link">📌 {{ fav_word }}</a>
+            <form method="POST" action="{{ url_for('toggle_favorite', word=fav_word) }}" style="display:inline;">
+              <button type="submit" class="fav-unbound">[해제]</button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--muted); font-size:13px;">검색 기록에서 ★를 눌러 고정해 보세요.</p>
+      {% endif %}
+    </div>
+
+    <div class="widget-box">
+      <div class="widget-title">추천 카테고리</div>
+      {% set follows = [
+        ('av-basic',    '기초',   '@basic_py',   '기초'),
+        ('av-control',  '제어',   '@control_py', '제어문'),
+        ('av-function', '함수',   '@func_py',    '함수'),
+        ('av-data',     '자료',   '@data_py',    '자료구조'),
+      ] %}
+      {% for cls, name, handle, cat in follows %}
+      <div class="suggest-follow">
+        <div class="follow-av {{ cls }}">{{ name }}</div>
+        <div class="follow-info">
+          <div class="follow-name">{{ name }} 문법</div>
+          <div class="follow-handle">{{ handle }}</div>
+        </div>
+        <a href="{{ url_for('index') }}?cat={{ cat }}" class="follow-btn">보기</a>
+      </div>
+      {% endfor %}
+    </div>
+  </aside>
+
+</div><!-- /app-layout -->
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '복사됨 ✓';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  });
+}
+</script>
+
+</body>
+</html>

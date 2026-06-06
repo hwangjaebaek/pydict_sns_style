@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}"{{ query }}" 검색 — PyDict{% endblock %}
+
+{% block content %}
+
+<div class="feed-header">
+  <a href="{{ url_for('index') }}" class="back-btn">←</a>
+  <span class="feed-title">검색결과</span>
+</div>
+
+{% if results %}
+<div class="search-result-header">
+  <div class="search-query">"{{ query }}"</div>
+  <div class="search-count">{{ results|length }}개의 문법 항목</div>
+</div>
+
+{% for item in results %}
+<a href="{{ url_for('detail', slug=item.slug) }}" class="grammar-card">
+  <div class="card-avatar av-{{ item.category }}">
+    {{ item.keyword[:2] if item.keyword|length >= 2 else item.keyword }}
+  </div>
+  <div class="card-body">
+    <div class="card-meta">
+      <span class="card-keyword">{{ item.keyword }}</span>
+      <span class="card-handle">@{{ item.slug }}_py</span>
+      <span class="card-dot">·</span>
+      <span class="level-tag lv-{{ item.level }}">
+        {{ '기초' if item.level == 'basic' else ('중급' if item.level == 'mid' else '고급') }}
+      </span>
+    </div>
+    <div class="card-summary">{{ item.summary }}</div>
+    <div class="card-actions" onclick="event.preventDefault()">
+      <button class="card-action action-like">🤍 <span>{{ item.likes }}</span></button>
+      <button class="card-action action-save">🔖 <span>저장</span></button>
+    </div>
+  </div>
+</a>
+{% endfor %}
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">🔍</div>
+  <div class="empty-title">"{{ query }}"를 찾을 수 없어요</div>
+  <div class="empty-desc">다른 키워드로 검색해보거나 아래 태그를 눌러보세요</div>
+  <div class="suggest-tags">
+    {% for tag in suggestions %}
+    <a href="{{ url_for('search') }}?q={{ tag }}" class="suggest-tag">#{{ tag }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

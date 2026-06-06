@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ grammar.keyword }} — PyDict{% endblock %}
+
+{% block content %}
+
+<div class="detail-back">
+  <a href="{{ url_for('index') }}" class="back-btn">←</a>
+  <span>게시물</span>
+</div>
+
+<div class="detail-post">
+
+  <!-- 작성자 (카테고리를 계정처럼) -->
+  <div class="detail-author">
+    <div class="detail-avatar av-{{ grammar.category }}">
+      {{ grammar.keyword[:2] if grammar.keyword|length >= 2 else grammar.keyword }}
+    </div>
+    <div>
+      <div class="detail-name">{{ grammar.category_label }}</div>
+      <div class="detail-handle">@{{ grammar.slug }}_py · Python {{ grammar.version_added }}+</div>
+    </div>
+    <span class="level-tag lv-{{ grammar.level }}" style="margin-left:auto;">
+      {{ '기초' if grammar.level == 'basic' else ('중급' if grammar.level == 'mid' else '고급') }}
+    </span>
+  </div>
+
+  <!-- 키워드 + 설명 -->
+  <div class="detail-keyword">{{ grammar.keyword }}</div>
+  <div style="font-size:20px; font-weight:700; color:var(--text); margin-bottom:10px;">{{ grammar.title }}</div>
+  <div class="detail-desc">{{ grammar.description }}</div>
+
+  <!-- 문법 구조 -->
+  <div class="code-section">
+    <div class="code-section-title">문법 구조</div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">Python</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+      <pre class="code-block">{{ grammar.syntax }}</pre>
+    </div>
+  </div>
+
+  <!-- 통계 (좋아요, 조회 등) -->
+  <div class="detail-stats">
+    <div><span class="stat-num">{{ grammar.view_count }}</span><span class="stat-lbl">조회</span></div>
+    <div><span class="stat-num">{{ grammar.like_count }}</span><span class="stat-lbl">좋아요</span></div>
+    <div><span class="stat-num">{{ grammar.save_count }}</span><span class="stat-lbl">저장</span></div>
+  </div>
+
+  <div class="detail-actions">
+    <button class="card-action action-reply">💬 댓글</button>
+    <button class="card-action action-like">🤍 좋아요</button>
+    <button class="card-action action-save">🔖 저장</button>
+    <button class="card-action action-share">↗ 공유</button>
+  </div>
+
+  <!-- 예제 코드 -->
+  {% for example in grammar.examples %}
+  <div class="code-section">
+    <div class="code-section-title">예제 {{ loop.index }} — {{ example.title }}</div>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:10px;">{{ example.desc }}</p>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">Python</span>
+        <button class="copy-btn" onclick="copyCode(this)">복사</button>
+      </div>
+      <pre class="code-block">{{ example.code }}</pre>
+    </div>
+    {% if example.output %}
+    <div class="output-wrap">
+      <div class="output-label">실행 결과</div>
+      <pre class="output-pre">{{ example.output }}</pre>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- 주의사항 -->
+  {% if grammar.notes %}
+  <div style="margin-bottom:16px;">
+    <div class="code-section-title">주의사항</div>
+    {% for note in grammar.notes %}
+    <div class="note-box note-{{ note.type }}">
+      <div>
+        <strong>{{ note.title }}</strong>
+        <p style="margin-top:4px;">{{ note.body }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- 관련 문법 -->
+  {% if grammar.related %}
+  <div>
+    <div class="code-section-title">관련 문법</div>
+    <div class="related-list">
+      {% for rel in grammar.related %}
+      <a href="{{ url_for('detail', slug=rel.slug) }}" class="related-item">
+        <span class="related-kw">{{ rel.keyword }}</span>
+        <span class="related-title">{{ rel.title }}</span>
+        <span style="margin-left:auto; color:var(--muted); font-size:13px;">→</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- 이전/다음 -->
+<div class="page-nav">
+  {% if grammar.prev %}
+  <a href="{{ url_for('detail', slug=grammar.prev.slug) }}" class="page-nav-btn">← {{ grammar.prev.title }}</a>
+  {% else %}<span></span>{% endif %}
+  {% if grammar.next %}
+  <a href="{{ url_for('detail', slug=grammar.next.slug) }}" class="page-nav-btn">{{ grammar.next.title }} →</a>
+  {% endif %}
+</div>
+
+{% endblock %}
