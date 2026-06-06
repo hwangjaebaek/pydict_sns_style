@@ -49,6 +49,10 @@
         <span class="nav-icon">🧩</span>
         <span class="nav-label">클래스</span>
       </a>
+      <a href="{{ url_for('favorites') }}" class="nav-item {% if request.endpoint == 'favorites' %}active{% endif %}">
+        <span class="nav-icon">🔖</span>
+        <span class="nav-label">즐겨찾기</span>
+      </a>
     </nav>
 
     <a href="{{ url_for('index') }}" class="post-btn">문법 보기</a>
@@ -165,6 +169,17 @@ function copyCode(btn) {
     btn.textContent = '복사됨 ✓';
     setTimeout(() => btn.textContent = '복사', 1500);
   });
+}
+
+function toggleSave(btn) {
+  const slug = btn.dataset.slug;
+  fetch('/save/' + slug, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      const countEl = btn.querySelector('span');
+      countEl.textContent = data.saved ? '저장됨' : '저장';
+      btn.style.color = data.saved ? 'var(--blue)' : '';
+    });
 }
 
 function toggleLike(btn) {

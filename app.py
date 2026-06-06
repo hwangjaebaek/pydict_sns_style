@@ -241,6 +241,7 @@ def index():
         total_count=len(GRAMMAR_DATA),
         error_msg=error_msg,
         liked_slugs=session.get("liked", []),
+        saved_slugs=session.get("saved", []),
     )
 
 
@@ -264,6 +265,31 @@ def like(slug):
     session["liked"] = liked
     session.modified = True
     return jsonify({"likes": item["likes"], "liked": is_liked})
+
+
+@app.route("/save/<slug>", methods=["POST"])
+def save(slug):
+    from flask import jsonify
+    item = next((g for g in GRAMMAR_DATA if g["slug"] == slug), None)
+    if item is None:
+        return jsonify({"error": "not found"}), 404
+    saved = session.get("saved", [])
+    if slug in saved:
+        saved.remove(slug)
+        is_saved = False
+    else:
+        saved.append(slug)
+        is_saved = True
+    session["saved"] = saved
+    session.modified = True
+    return jsonify({"saved": is_saved, "count": len(saved)})
+
+
+@app.route("/favorites")
+def favorites():
+    saved_slugs = session.get("saved", [])
+    saved_items = [g for g in GRAMMAR_DATA if g["slug"] in saved_slugs]
+    return render_template("favorites.html", saved_items=saved_items, saved_slugs=saved_slugs)
 
 
 @app.route("/toggle_favorite/<word>", methods=["POST"])
@@ -326,7 +352,9 @@ def detail(slug):
         "prev": {"slug": prev_item["slug"], "title": prev_item["title"]} if prev_item else None,
         "next": {"slug": next_item["slug"], "title": next_item["title"]} if next_item else None,
     }
-    return render_template("detail.html", grammar=grammar, liked_slugs=session.get("liked", []))
+    return render_template("detail.html", grammar=grammar,
+                           liked_slugs=session.get("liked", []),
+                           saved_slugs=session.get("saved", []))
 
 
 if __name__ == "__main__":
