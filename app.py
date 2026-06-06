@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = "pydict-secret-2024"
+import os
+app.secret_key = os.environ.get("SECRET_KEY", "pydict-secret-2024")
 
 GRAMMAR_DATA = [
     {
@@ -272,44 +273,26 @@ def search():
 
 @app.route("/detail/<slug>")
 def detail(slug):
+    item = next((g for g in GRAMMAR_DATA if g["slug"] == slug), None)
+    if item is None:
+        return redirect(url_for("index"))
+
+    idx = GRAMMAR_DATA.index(item)
+    prev_item = GRAMMAR_DATA[idx - 1] if idx > 0 else None
+    next_item = GRAMMAR_DATA[idx + 1] if idx < len(GRAMMAR_DATA) - 1 else None
+
     grammar = {
-        "slug": slug,
-        "keyword": "for",
-        "title": "for 반복문",
-        "category": "control",
-        "category_label": "제어문",
-        "level": "basic",
-        "version_added": "1.0",
-        "view_count": "2,847",
-        "like_count": "428",
-        "save_count": "156",
-        "description": "for 문은 리스트, 문자열, range 등 반복 가능한 객체의 각 요소를 순서대로 꺼내며 코드 블록을 반복 실행합니다. 파이썬의 for 문은 값을 직접 순회하기 때문에 직관적입니다.",
-        "syntax": "for 변수 in 반복가능객체:\n    실행할 코드",
-        "examples": [
-            {
-                "title": "range()로 숫자 반복",
-                "desc": "range(n)은 0부터 n-1까지의 정수를 순서대로 생성합니다.",
-                "code": "for i in range(5):\n    print(i)",
-                "output": "0\n1\n2\n3\n4",
-            },
-            {
-                "title": "리스트 순회",
-                "desc": "리스트의 각 요소를 차례대로 꺼내 처리합니다.",
-                "code": 'fruits = ["사과", "바나나", "포도"]\nfor fruit in fruits:\n    print(f"과일: {fruit}")',
-                "output": "과일: 사과\n과일: 바나나\n과일: 포도",
-            },
-        ],
-        "notes": [
-            {"type": "warning", "title": "들여쓰기 필수", "body": "for 블록 내부는 반드시 4칸 들여쓰기해야 합니다."},
-            {"type": "info",   "title": "range 범위",  "body": "range(n)은 0 이상 n 미만입니다. 1부터 5까지면 range(1, 6)."},
-        ],
-        "related": [
-            {"slug": "while", "keyword": "while",   "title": "while 반복문"},
-            {"slug": "list",  "keyword": "[ ]",     "title": "리스트"},
-            {"slug": "if",    "keyword": "if/elif",  "title": "조건문"},
-        ],
-        "prev": {"slug": "if",    "title": "조건문"},
-        "next": {"slug": "while", "title": "while 반복문"},
+        **item,
+        "view_count": str(item["likes"] * 6),
+        "like_count": str(item["likes"]),
+        "save_count": str(item["likes"] // 3),
+        "description": item["summary"],
+        "syntax": item.get("preview_code", ""),
+        "examples": [],
+        "notes": [],
+        "related": [],
+        "prev": {"slug": prev_item["slug"], "title": prev_item["title"]} if prev_item else None,
+        "next": {"slug": next_item["slug"], "title": next_item["title"]} if next_item else None,
     }
     return render_template("detail.html", grammar=grammar)
 
