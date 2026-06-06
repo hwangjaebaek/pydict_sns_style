@@ -50,7 +50,9 @@
 
   <div class="detail-actions">
     <button class="card-action action-reply">💬 댓글</button>
-    <button class="card-action action-like">🤍 좋아요</button>
+    <button class="card-action action-like like-btn" data-slug="{{ grammar.slug }}" onclick="toggleLike(this)">
+      {{ '❤️' if grammar.slug in liked_slugs else '🤍' }} <span id="detail-like-count">{{ grammar.like_count }}</span>
+    </button>
     <button class="card-action action-save">🔖 저장</button>
     <button class="card-action action-share">↗ 공유</button>
   </div>

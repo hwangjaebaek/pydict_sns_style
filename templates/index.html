@@ -51,7 +51,9 @@
     {% endif %}
     <div class="card-actions" onclick="event.preventDefault()">
       <button class="card-action action-reply">💬 <span>댓글</span></button>
-      <button class="card-action action-like">🤍 <span>{{ item.likes }}</span></button>
+      <button class="card-action action-like like-btn" data-slug="{{ item.slug }}" onclick="toggleLike(this)">
+        {{ '❤️' if item.slug in liked_slugs else '🤍' }} <span>{{ item.likes }}</span>
+      </button>
       <button class="card-action action-save">🔖 <span>저장</span></button>
       <button class="card-action action-share">↗ <span>공유</span></button>
     </div>

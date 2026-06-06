@@ -166,6 +166,20 @@ function copyCode(btn) {
     setTimeout(() => btn.textContent = '복사', 1500);
   });
 }
+
+function toggleLike(btn) {
+  const slug = btn.dataset.slug;
+  fetch('/like/' + slug, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      const countEl = btn.querySelector('span');
+      countEl.textContent = data.likes;
+      btn.innerHTML = (data.liked ? '❤️' : '🤍') + ' <span>' + data.likes + '</span>';
+      // detail 페이지의 통계 수도 동기화
+      const detailCount = document.getElementById('detail-like-count');
+      if (detailCount) detailCount.textContent = data.likes;
+    });
+}
 </script>
 
 </body>
