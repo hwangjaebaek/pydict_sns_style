@@ -227,6 +227,7 @@ def index():
                     history.remove(keyword)
                 history.insert(0, keyword)
                 session["history"] = history[:10]
+                session.modified = True
                 return redirect(url_for("search") + f"?q={keyword}")
 
     selected_cat = request.args.get("cat", "")
@@ -250,6 +251,7 @@ def toggle_favorite(word):
     else:
         favorites.append(word)
     session["favorites"] = favorites
+    session.modified = True
     return redirect(url_for("index"))
 
 
@@ -265,6 +267,13 @@ def search():
             or q in g["summary"].lower()
             or q in g["slug"].lower()
         ]
+        if results:
+            history = session.get("history", [])
+            if query in history:
+                history.remove(query)
+            history.insert(0, query)
+            session["history"] = history[:10]
+            session.modified = True
     else:
         results = []
     suggestions = ["for", "if", "def", "list", "dict", "class", "while"]
